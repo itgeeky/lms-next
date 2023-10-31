@@ -3,7 +3,6 @@ import { db } from '@/lib/db';
 import { auth } from '@clerk/nextjs';
 import {
   CircleDollarSign,
-  File,
   Files,
   LayoutDashboard,
   ListChecks,
@@ -16,6 +15,8 @@ import { CategoryForm } from './_components/category-form';
 import { PriceForm } from './_components/price-form';
 import { AttachmentForm } from './_components/attachment-form';
 import { ChapterForm } from './_components/chapters-form';
+import { Banner } from '@/components/ui/banner';
+import Actions from './_components/actions';
 
 const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
   const { userId } = auth();
@@ -27,7 +28,7 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
   const course = await db.course.findUnique({
     where: {
       id: params.courseId,
-      userId
+      userId,
     },
     include: {
       chapters: {
@@ -35,11 +36,11 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
           position: 'asc',
         },
       },
-      attachments:{
+      attachments: {
         orderBy: {
           createdAt: 'desc',
         },
-      }
+      },
     },
   });
 
@@ -64,62 +65,72 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
 
   const totalFields = requiredFields.length;
   const completedFields = requiredFields.filter(Boolean).length;
-
   const completionFields = `(${completedFields} / ${totalFields})`;
+  const isCompleted = requiredFields.every(Boolean);
 
   return (
-    <div className='p-6 '>
-      <div className='flex items-center justify-between'>
-        <div className='flex flex-col gap-y-2'>
-          <h1 className='text-2xl font-medium'>Course Setup</h1>
-          <span className='text-sm text-slate-700'>
-            Complete all fields {completionFields}
-          </span>
-        </div>
-      </div>
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-6'>
-        <div>
-          <div className='flex items-center gap-x-2'>
-            <IconBadge icon={LayoutDashboard} variant='default' />
-            <h2 className='text-xl'>Customize your course!</h2>
+    <>
+      {!course.isPublished && (
+        <Banner label='This course is not published yet. It will not be visible to the students.' />
+      )}
+      <div className='p-6 '>
+        <div className='flex items-center justify-between'>
+          <div className='flex flex-col gap-y-2'>
+            <h1 className='text-2xl font-medium'>Course Setup</h1>
+            <span className='text-sm text-slate-700'>
+              Complete all fields {completionFields}
+            </span>
           </div>
-          <TitleForm initialData={course} courseId={course.id} />
-          <DescriptionForm initialData={course} courseId={course.id} />
-          <ImageForm initialData={course} courseId={course.id} />
-          <CategoryForm
-            options={categories.map((category) => ({
-              label: category.name,
-              value: category.id,
-            }))}
-            initialData={course}
+          <Actions
+            disabled={!isCompleted}
             courseId={course.id}
+            isPublished={course.isPublished}
           />
         </div>
-        <div className='space-y-6'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-6'>
           <div>
             <div className='flex items-center gap-x-2'>
-              <IconBadge icon={ListChecks} />
-              <h2 className='text-xl'>Course chapters</h2>
+              <IconBadge icon={LayoutDashboard} variant='default' />
+              <h2 className='text-xl'>Customize your course!</h2>
             </div>
-            <ChapterForm initialData={course} courseId={course.id} /> 
+            <TitleForm initialData={course} courseId={course.id} />
+            <DescriptionForm initialData={course} courseId={course.id} />
+            <ImageForm initialData={course} courseId={course.id} />
+            <CategoryForm
+              options={categories.map((category) => ({
+                label: category.name,
+                value: category.id,
+              }))}
+              initialData={course}
+              courseId={course.id}
+            />
           </div>
-          <div>
-            <div className='flex items-center gap-x-2'>
-              <IconBadge icon={CircleDollarSign} />
-              <h2 className='text-xl'>Sell your course</h2>
+          <div className='space-y-6'>
+            <div>
+              <div className='flex items-center gap-x-2'>
+                <IconBadge icon={ListChecks} />
+                <h2 className='text-xl'>Course chapters</h2>
+              </div>
+              <ChapterForm initialData={course} courseId={course.id} />
             </div>
-            <PriceForm initialData={course} courseId={course.id} />
-          </div>
-          <div>
-            <div className='flex items-center gap-x-2'>
-              <IconBadge icon={Files} />
-              <h2 className='text-xl'>Resourses & Attachments</h2>
+            <div>
+              <div className='flex items-center gap-x-2'>
+                <IconBadge icon={CircleDollarSign} />
+                <h2 className='text-xl'>Sell your course</h2>
+              </div>
+              <PriceForm initialData={course} courseId={course.id} />
             </div>
-            <AttachmentForm initialData={course} courseId={course.id} />
+            <div>
+              <div className='flex items-center gap-x-2'>
+                <IconBadge icon={Files} />
+                <h2 className='text-xl'>Resourses & Attachments</h2>
+              </div>
+              <AttachmentForm initialData={course} courseId={course.id} />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
