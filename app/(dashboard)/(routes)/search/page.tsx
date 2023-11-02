@@ -3,6 +3,8 @@ import { Categories } from './_components/categories';
 import { db } from '@/lib/db';
 import { auth } from '@clerk/nextjs';
 import SearchInput from '@/components/search-input';
+import { getCourses } from '@/actions/get-courses';
+import CoursesList from './_components/courses-list';
 
 interface SearchPageProps {
   searchParams: {
@@ -24,6 +26,13 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
     },
   });
 
+  const courses = await getCourses({
+    userId,
+    title: searchParams.title,
+    categoryId: searchParams.categoryId,
+  })
+  console.log('COURSES', courses)
+
   return (
     <>
     <div className='px-6 pt-6 md:hidden md:mb-0 block'>
@@ -31,6 +40,7 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
     </div>
       <div className='p-6'>
         <Categories items={categories} />
+        <CoursesList items= {courses}/>
       </div>
     </>
   );
