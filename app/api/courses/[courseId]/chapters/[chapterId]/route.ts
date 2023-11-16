@@ -37,14 +37,19 @@ export async function PATCH(
           chapterId: chapterId,
         },
       });
-
       if (existingMuxData) {
-        await Video.Assets.del(existingMuxData.assetId);
         await db.muxData.delete({
           where: {
             id: existingMuxData.id,
           },
         });
+      }
+      try {
+        if (existingMuxData) {
+          await Video.Assets.del(existingMuxData.assetId);
+        }
+      } catch (error) {
+        console.log('[MUX_DELETE]', error);
       }
 
       const asset = await Video.Assets.create({
@@ -114,14 +119,19 @@ export async function DELETE(
           chapterId: chapterId,
         },
       });
-
       if (existingMuxData) {
-        await Video.Assets.del(existingMuxData.assetId);
         await db.muxData.delete({
           where: {
             id: existingMuxData.id,
           },
         });
+      }
+      try {
+        if (existingMuxData) {
+          await Video.Assets.del(existingMuxData.assetId);
+        }
+      } catch (error) {
+        console.log('[MUX_DELETE]', error);
       }
     }
 
