@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { UserButton, auth } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import CoursesList from '../search/_components/courses-list';
+import { CheckCircle2, Clock } from 'lucide-react';
+import InfoCard from './_components/info-card';
 
 export default async function Dashboard() {
   const { userId } = auth();
@@ -17,14 +19,19 @@ export default async function Dashboard() {
   return(
     <div className='p-6 space-y-4 '>
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-        <div>
-          INFO CARD
-        </div>
-        <div>
-          INFO CARD
-        </div>
+        <InfoCard
+          icon={Clock}
+          label='Ongoing Courses'
+          count={ongoingCourses.length}
+        />
+        <InfoCard
+          icon={CheckCircle2}
+          label='Completed Courses'
+          count={completedCourses.length}
+          variant='success'
+        />
       </div>
-      <CoursesList items={[...completedCourses, ...ongoingCourses]}/>
+      <CoursesList items={[...ongoingCourses ,...completedCourses]}/>
 
     </div>
   );
